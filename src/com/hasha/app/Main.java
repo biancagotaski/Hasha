@@ -1,4 +1,4 @@
-package com.hasha;
+package com.hasha.app;
 
 import java.io.PrintStream;
 import java.util.Scanner;
