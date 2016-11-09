@@ -1,31 +1,24 @@
 package com.hasha;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 
 public class Main {
 
 
-    static Scanner entrada;
-    static PrintStream saida;
+    private static Scanner entrada;
+    private static PrintStream saida;
 
-    static final int VAGAS_NA_TURMA = 10;
+    private static final int VAGAS_NA_TURMA = 10;
 
-    static String[] alunos = new String[VAGAS_NA_TURMA];
-    static Double[] av1 = new Double[VAGAS_NA_TURMA];
-    static Double[] av2 = new Double[VAGAS_NA_TURMA];
+    private static String[] alunos = new String[VAGAS_NA_TURMA];
+    private static Double[] av1 = new Double[VAGAS_NA_TURMA];
+    private static Double[] av2 = new Double[VAGAS_NA_TURMA];
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
-        entrada = new Scanner(System.in, "IBM850");
-
-        try {
-            saida = new PrintStream(System.out, true, "IBM850");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        entrada = new Scanner(System.in, "850");
+        saida = new PrintStream(System.out, true, "850");
 
         final int ITEM_REGISTRO_DE_ALUNO = 1;
         final int ITEM_CONSULTAR_BOLETIM = 2;
@@ -35,7 +28,7 @@ public class Main {
         int itemEscolhidoMenu = 4;
 
         loopPrincipal:
-        while(true) {
+        while (true) {
 
             exibirMenu();
 
@@ -72,7 +65,7 @@ public class Main {
                     saida.println("Saindo do programa...");
                     break loopPrincipal;
             }
-            saida.println("\n----------------------------------------------------------------\n");
+            saida.println("\n-----------------------------------------------------------------\n");
         }
 
         saida.println("▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\n" +
@@ -116,7 +109,7 @@ public class Main {
                 aluno = entrada.nextLine();
                 repetir = false;
             } catch (Exception e) {
-                saida.println("Entrada inválida.");
+                saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
             }
         } while (repetir);
@@ -129,7 +122,7 @@ public class Main {
                 _av1 = Double.parseDouble(entrada.nextLine());
                 repetir = false;
             } catch (NumberFormatException e) {
-                saida.println("Entrada inválida.");
+                saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
             }
         } while (repetir);
@@ -142,7 +135,7 @@ public class Main {
                 _av2 = Double.parseDouble(entrada.nextLine());
                 repetir = false;
             } catch (NumberFormatException e) {
-                saida.println("Entrada inválida.");
+                saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
             }
         } while (repetir);
@@ -156,6 +149,10 @@ public class Main {
 
     }
 
+    /**
+     * Este método tem a responsabilidade de solicitar ao usuário o código correspondente a algum aluno cadastrado
+     * e retorna os dados do mesmo na tela.
+     */
     private static void consultarBoletimAluno() {
 
         for (String aluno : alunos) {
@@ -174,18 +171,18 @@ public class Main {
                 codigoAluno = Integer.parseInt(entrada.nextLine());
                 repetir = false;
             } catch (NumberFormatException e) {
-                saida.println("Entrada inválida.");
+                saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
             }
         } while (repetir);
 
         try {
             if (alunos[codigoAluno] == null) {
-                System.out.println("Código do aluno não existe. ");
+                System.out.println("Código do aluno não existe.");
                 return;
             }
         } catch (Exception e) {
-            System.out.println("Código do aluno não existe. ");
+            System.out.println("Código do aluno não existe.");
             return;
         }
 
@@ -193,7 +190,7 @@ public class Main {
         saida.println("AV1: " + av1[codigoAluno]);
         saida.println("AV2: " + av2[codigoAluno]);
         Double media = (av1[codigoAluno] + av2[codigoAluno]) / 2;
-        saida.println("Média: " + media);
+        saida.println("Média: " + String.format("%2.2f",media));
         saida.println("Situação: " + situacaoAluno(media));
     }
 
