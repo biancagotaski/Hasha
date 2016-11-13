@@ -1,6 +1,6 @@
 echo off
 cls
 Title Hasha
-cd "out\production\Hasha"
-java com.hasha.app.Main
+cd "out\artifacts\Hasha_jar"
+java -jar Hasha.jar
 pause

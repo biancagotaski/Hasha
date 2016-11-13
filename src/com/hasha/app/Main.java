@@ -1,38 +1,61 @@
 package com.hasha.app;
 
+import com.hasha.dao.AlunoDAO;
+import com.hasha.entity.Aluno;
+
 import java.io.PrintStream;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Scanner;
 
 public class Main {
 
-
+    /**
+     * Atributo que representa a entrada de dados/informações do teclado no console.
+     */
     private static Scanner entrada;
+
+    /**
+     * Atributo que representa a saída de dados/informações do sistema para o console.
+     */
     private static PrintStream saida;
 
+    /**
+     * Atributo que define a quantidade fixa de vagas para alunos na turma.
+     */
     private static final int VAGAS_NA_TURMA = 10;
 
-    private static String[] alunos = new String[VAGAS_NA_TURMA];
-    private static Double[] av1 = new Double[VAGAS_NA_TURMA];
-    private static Double[] av2 = new Double[VAGAS_NA_TURMA];
-
+    /**
+     * O método principal chamado pela JVM.
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
 
+        // Inicialização da variável 'entrada', com instanciação da classe Scanner. (Criando o primeiro objeto do sistema).
+        // UTF-8 (codificação de caracteres).
         entrada = new Scanner(System.in, "850");
+
         saida = new PrintStream(System.out, true, "850");
 
+        // Itens do menu, sendo constantes
         final int ITEM_REGISTRO_DE_ALUNO = 1;
         final int ITEM_CONSULTAR_BOLETIM = 2;
         final int ITEM_CONSULTAR_NOTAS = 3;
         final int ITEM_SAIR = 4;
 
-        int itemEscolhidoMenu = 4;
+        int itemEscolhidoMenu = 0;
 
-        loopPrincipal:
-        while (true) {
+        boolean continuar = true;
+
+        do {
 
             exibirMenu();
 
             boolean repetir;
+
             do {
                 try {
                     saida.print("Item menu: ");
@@ -63,10 +86,13 @@ public class Main {
                     break;
                 case ITEM_SAIR:
                     saida.println("Saindo do programa...");
-                    break loopPrincipal;
+                    continuar = false;
+                    break;
             }
+
             saida.println("\n-----------------------------------------------------------------\n");
-        }
+
+        } while (continuar);
 
         saida.println("▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\n" +
                 "░░░░░ ░░░░▀█▄▀▄▀██████░▀█▄▀▄▀████▀\n" +
@@ -83,35 +109,21 @@ public class Main {
         System.out.println("[4] Sair.");
     }
 
-    private static void registrarAluno() {
-        int indice = 0;
-        boolean indiceDisponivel = false;
-
-        for (int x = 0; x < alunos.length; x++) {
-            if (alunos[x] == null) {
-                indice = x;
-                indiceDisponivel = true;
-                break;
-            }
-        }
-
-        if (!indiceDisponivel) {
-            saida.println("Não há mais espaço na turma.");
-            return;
-        }
+    private static void registrarAluno() throws InterruptedException {
 
         boolean repetir;
 
-        String aluno = null;
+        String nome = null;
         do {
             saida.print("Nome do aluno: ");
             try {
-                aluno = entrada.nextLine();
+                nome = entrada.nextLine();
                 repetir = false;
             } catch (Exception e) {
                 saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
             }
+            Thread.sleep(2000L);
         } while (repetir);
 
 
@@ -140,12 +152,21 @@ public class Main {
             }
         } while (repetir);
 
-        alunos[indice] = aluno;
-        av1[indice] = _av1;
-        av2[indice] = _av2;
+        Aluno aluno = new Aluno();
 
-        saida.println("Aluno cadastrado com código: " + indice);
+        aluno.setNome(nome);
+        aluno.setNota1(_av1);
+        aluno.setNota2(_av2);
 
+        Integer codigo = null;
+
+        try {
+            codigo = new AlunoDAO().adicionar(aluno);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        saida.println("Aluno cadastrado com código: " + codigo);
 
     }
 
@@ -155,67 +176,53 @@ public class Main {
      */
     private static void consultarBoletimAluno() {
 
-        for (String aluno : alunos) {
-            if (aluno != null) {
-                break;
-            }
-            System.out.println("Turma vazia!");
-            return;
-        }
-
         boolean repetir;
         int codigoAluno = 0;
+        Aluno aluno = null;
+
         do {
+
             try {
                 saida.print("Código: ");
                 codigoAluno = Integer.parseInt(entrada.nextLine());
+                aluno = new AlunoDAO().findAluno(codigoAluno);
                 repetir = false;
             } catch (NumberFormatException e) {
                 saida.println(">>> Entrada inválida. <<<");
                 repetir = true;
+            } catch (Exception e) {
+                saida.println(e.getMessage());
+                repetir = true;
             }
+
         } while (repetir);
 
-        try {
-            if (alunos[codigoAluno] == null) {
-                System.out.println("Código do aluno não existe.");
-                return;
-            }
-        } catch (Exception e) {
-            System.out.println("Código do aluno não existe.");
-            return;
-        }
-
-        saida.println("\nNome: " + alunos[codigoAluno]);
-        saida.println("AV1: " + av1[codigoAluno]);
-        saida.println("AV2: " + av2[codigoAluno]);
-        Double media = (av1[codigoAluno] + av2[codigoAluno]) / 2;
-        saida.println("Média: " + String.format("%2.2f",media));
+        saida.println("\nNome: " + aluno.getNome());
+        saida.println("AV1: " + aluno.getNota1());
+        saida.println("AV2: " + aluno.getNota2());
+        Double media = (aluno.getNota1() + aluno.getNota2()) / 2;
+        saida.println("Média: " + String.format("%2.2f", media));
         saida.println("Situação: " + situacaoAluno(media));
     }
 
     private static void consultarNotasTurma() {
 
-        for (String aluno : alunos) {
-            if (aluno != null) {
-                break;
-            }
-            System.out.println("Turma vazia!");
-            return;
+        ArrayList<Aluno> alunos;
+        try {
+            alunos = new AlunoDAO().listaAlunos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         saida.println("________________________________________________________________________");
         saida.println(String.format("|%-30s|%6s|%6s|%12s|%12s|", "Nome Aluno", "AV1", "AV2", "Média Final", "Situação"));
         saida.println("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯");
-        for (int x = 0; x < alunos.length; x++) {
-            if (alunos[x] == null) {
-                continue;
-            }
+        for (Aluno aluno : alunos) {
 
-            String nomeAluno = alunos[x];
-            Double av1Aluno = av1[x];
-            Double av2Aluno = av2[x];
-            Double mediaFinal = (av1[x] + av2[x]) / 2;
+            String nomeAluno = aluno.getNome();
+            Double av1Aluno = aluno.getNota1();
+            Double av2Aluno = aluno.getNota2();
+            Double mediaFinal = (aluno.getNota1() + aluno.getNota2()) / 2;
 
             saida.println(String.format("|%-30s|%6.2f|%6.2f|%12.2f|%12s|", nomeAluno, av1Aluno, av2Aluno, mediaFinal, situacaoAluno(mediaFinal)));
         }
@@ -237,4 +244,5 @@ public class Main {
 
         return situacao;
     }
+
 }
